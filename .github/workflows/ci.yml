@@ -27,21 +27,26 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      # Cette étape récupère le code source de la branche actuelle
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'
+      # Configure Python 3.9 pour l'utilisation dans les étapes suivantes
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+      # Installe les dépendances requises à partir de requirements.txt
 
     - name: Run tests
       run: |
         pytest tests/
+      # Exécute les tests unitaires et d'intégration
 
     - name: Build Docker image
       run: |
         docker build -t myapi .
+      # Construit une image Docker pour l'application
