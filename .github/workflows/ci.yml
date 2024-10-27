@@ -50,6 +50,7 @@ jobs:
         echo "POSTGRES_USER=orders" >> $GITHUB_ENV
         echo "POSTGRES_PASSWORD=apiOrders" >> $GITHUB_ENV
         echo "POSTGRES_DB=orders_db" >> $GITHUB_ENV
+        echo "POSTGRES_PORT=5432" >> $GITHUB_ENV  # Ajoutez cette ligne
         echo "DATABASE_URL=postgresql+asyncpg://orders:apiOrders@postgres:5432/orders_db" >> $GITHUB_ENV
       # Configure les variables d'environnement nécessaires pour les tests
 
