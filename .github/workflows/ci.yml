@@ -45,7 +45,7 @@ jobs:
         pip install -r requirements.txt
       # Installe les dépendances requises à partir de requirements.txt
 
-    - - name: Configure environment variables for testing
+    - name: Configure environment variables for testing
       run: |
         echo "POSTGRES_USER=orders" >> $GITHUB_ENV
         echo "POSTGRES_PASSWORD=apiOrders" >> $GITHUB_ENV
