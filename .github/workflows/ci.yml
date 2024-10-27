@@ -27,38 +27,33 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      # Cette étape récupère le code source de la branche actuelle
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'
-      # Configure Python 3.9 pour l'utilisation dans les étapes suivantes
 
     - name: Set PYTHONPATH
       run: echo "PYTHONPATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
-      # Définit la variable PYTHONPATH pour s'assurer que Python trouve les modules
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-      # Installe les dépendances requises à partir de requirements.txt
 
     - name: Configure environment variables for testing
       run: |
         echo "POSTGRES_USER=orders" >> $GITHUB_ENV
         echo "POSTGRES_PASSWORD=apiOrders" >> $GITHUB_ENV
         echo "POSTGRES_DB=orders_db" >> $GITHUB_ENV
-        echo "DATABASE_URL=postgresql+asyncpg://orders:apiOrders@localhost:5432/orders_db" >> $GITHUB_ENV
-      # Configure les variables d'environnement nécessaires pour les tests
+        echo "DATABASE_URL=postgresql+asyncpg://orders:apiOrders@postgres:5432/orders_db" >> $GITHUB_ENV
+        echo "POSTGRES_PORT=5432" >> $GITHUB_ENV
+        echo "DATABASE_URL=$DATABASE_URL" # Debugging output
 
     - name: Run tests
       run: |
         pytest tests/
-      # Exécute les tests unitaires et d'intégration
 
     - name: Build Docker image
       run: |
         docker build -t myapi .
-      # Construit une image Docker pour l'application
