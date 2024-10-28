@@ -10,15 +10,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    # Définition des variables d'environnement par défaut
-    env:
-      POSTGRES_USER: test_user
-      POSTGRES_PASSWORD: test_password
-      POSTGRES_DB: test_db
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5432
-      API_PORT: 8000  # Port par défaut pour l'API
-
     steps:
     - uses: actions/checkout@v2
 
@@ -32,6 +23,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Set PYTHONPATH
+      run: |
+        echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+        echo "PYTHONPATH=${{ github.workspace }}/app" >> $GITHUB_ENV
+
     - name: Run tests
       run: |
         pytest tests/
@@ -39,7 +35,3 @@ jobs:
     - name: Build Docker image
       run: |
         docker build -t myapi .
-
-    - name: Docker Run (optional)
-      run: |
-        docker run -d -p ${{ env.API_PORT }}:${{ env.API_PORT }} --name myapi_container myapi
