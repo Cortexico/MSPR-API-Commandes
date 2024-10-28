@@ -9,63 +9,52 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    
+    # Configuration des services nécessaires pour les tests
     services:
       postgres:
-        image: postgres:13
+        image: postgres:13  # Utilisation de l'image Docker officielle PostgreSQL version 13
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: orders  # Nom d'utilisateur pour la base de données
+          POSTGRES_PASSWORD: apiOrders  # Mot de passe pour la base de données
+          POSTGRES_DB: orders_db  # Nom de la base de données
+        ports:
+          - 5432:5432  # Exposition du port 5432 pour la connexion à la base de données
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
-          --health-timeout 20s  # Augmenté pour permettre plus de temps au conteneur de se stabiliser
+          --health-timeout 5s
           --health-retries 5
-        ports:
-          - 5432:5432
-    env:
-      DATABASE_URL: postgresql+asyncpg://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}
-      # Adaptez cette chaîne à vos besoins ou configurez-la pour qu'elle soit générée dynamiquement avec les bonnes variables.
 
+      rabbitmq:
+        image: rabbitmq:3-management
+          - 5672:5672  # Port par défaut pour RabbitMQ
+          - 15672:15672  # Port pour l'interface web de gestion
+
+    # Étapes du job
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2  # Cette étape permet de récupérer le code du dépôt GitHub
+
+    - name: Set up Docker Compose
+      run: docker-compose -f docker-compose.yml up -d  # Lance les services définis dans le fichier docker-compose.yml en mode détaché
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'
 
-    - name: Set PYTHONPATH
-      run: |
-        echo "PYTHONPATH=${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE}/app" >> $GITHUB_ENV
-
-    - name: Cache Python packages
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        docker-compose run api pip install -r requirements.txt
 
     - name: Run tests
       run: |
-        pytest tests/
+        docker-compose run api pytest tests/
 
     - name: Build Docker image
       run: |
         docker build -t myapi .
 
+    - name: Clean up  # Nettoyage
+      run: docker-compose down  # Arrête et supprime les conteneurs lancés par Docker Compose
 
-    # - name: Notify on Slack
-    #   if: always()
-    #   uses: rtCamp/action-slack-notify@v2
-    #   env:
-    #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    #     SLACK_CHANNEL: 'your-channel'
-    #     SLACK_MESSAGE: 'Build ${{ job.status }}: ${{ github.repository }} @ ${{ github.ref }}'
-    #   # Envoie une notification Slack à chaque exécution du workflow.
