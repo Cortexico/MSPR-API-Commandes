@@ -19,7 +19,7 @@ jobs:
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
-          --health-timeout 5s
+          --health-timeout 20s  # Augmenté pour permettre plus de temps au conteneur de se stabiliser
           --health-retries 5
         ports:
           - 5432:5432
