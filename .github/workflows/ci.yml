@@ -23,7 +23,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-    # Cette configuration initialise une base de données PostgreSQL pour les tests.
+    # Configuration de la base de données PostgreSQL.
 
     steps:
     - uses: actions/checkout@v2
@@ -35,6 +35,10 @@ jobs:
         python-version: '3.9'
       # Configure Python 3.9 pour exécuter l'application.
 
+    - name: Set PYTHONPATH
+      run: echo "PYTHONPATH=${GITHUB_WORKSPACE}/app" >> $GITHUB_ENV
+      # Ajoute le dossier 'app' au PYTHONPATH pour que les modules soient correctement détectés.
+
     - name: Cache Python packages
       uses: actions/cache@v2
       with:
@@ -42,18 +46,13 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
-      # Cette étape met en cache les paquets pip pour accélérer l'installation.
+      # Met en cache les dépendances Python.
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-      # Installe les dépendances requises pour l'application.
-
-    - name: Configure environment variables for testing
-      run: |
-        echo "DATABASE_URL=postgresql+asyncpg://orders:apiOrders@localhost:5432/orders_db" >> $GITHUB_ENV
-      # Configure l'URL de la base de données pour les tests.
+      # Installe les dépendances nécessaires pour l'application.
 
     - name: Run tests
       run: |
@@ -65,11 +64,11 @@ jobs:
         docker build -t myapi .
       # Construit une image Docker pour l'application.
 
-    - name: Notify on Slack
-      if: always()
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_CHANNEL: 'your-channel'
-        SLACK_MESSAGE: 'Build ${{ job.status }}: ${{ github.repository }} @ ${{ github.ref }}'
-      # Envoie une notification Slack à chaque exécution du workflow.
+    # - name: Notify on Slack
+    #   if: always()
+    #   uses: rtCamp/action-slack-notify@v2
+    #   env:
+    #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    #     SLACK_CHANNEL: 'your-channel'
+    #     SLACK_MESSAGE: 'Build ${{ job.status }}: ${{ github.repository }} @ ${{ github.ref }}'
+    #   # Envoie une notification Slack à chaque exécution du workflow.
