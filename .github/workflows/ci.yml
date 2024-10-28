@@ -1,49 +1,37 @@
 name: CI/CD Pipeline for FastAPI
 
-# Déclencheurs pour l'exécution du workflow
 on:
   push:
-    branches: [ main ]  # Exécute le workflow pour les push sur la branche main
+    branches: [ main ]
   pull_request:
-    branches: [ main ]  # Exécute le workflow pour les pull requests sur la branche main
+    branches: [ main ]
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest  # Utilise la dernière version d'Ubuntu
+    runs-on: ubuntu-latest
 
-    # Définit les étapes du job
     steps:
     - uses: actions/checkout@v2  # Récupère le code source de la branche
 
-    - name: Set up Python 3.9  # Configure l'environnement Python
+    - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'
 
-    - name: Install dependencies  # Installe les dépendances requises à partir de requirements.txt
+    - name: Set PYTHONPATH
+      run: |
+        echo "PYTHONPATH=${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE}/app" >> $GITHUB_ENV
+      # Définit le PYTHONPATH pour que Python puisse détecter le module `app`
+
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run tests  # Exécute les tests unitaires
+    - name: Run tests
       run: |
-        pytest
+        pytest tests/
 
-    - name: Build Docker image  # Construit l'image Docker de l'API
+    - name: Build Docker image
       run: |
         docker build -t myapi .
-
-    - name: Push Docker image  # Optionnel: pousse l'image Docker dans un registre (exemple avec Docker Hub)
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        docker tag myapi $DOCKER_USERNAME/myapi:latest
-        docker push $DOCKER_USERNAME/myapi:latest
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}  # Assurez-vous de configurer ces secrets dans GitHub
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
-# Notes supplémentaires:
-# - Assurez-vous que votre fichier requirements.txt est à la racine du projet pour que pip puisse l'identifier.
-# - La commande pytest suppose que vous avez des tests configurés avec pytest.
-# - La partie "Push Docker image" est optionnelle et doit être configurée avec vos informations de Docker Hub.
