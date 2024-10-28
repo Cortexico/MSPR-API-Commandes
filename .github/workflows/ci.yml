@@ -10,18 +10,22 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    # Définition des variables d'environnement par défaut
+    env:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: test_db
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      API_PORT: 8000  # Port par défaut pour l'API
+
     steps:
-    - uses: actions/checkout@v2  # Récupère le code source de la branche
+    - uses: actions/checkout@v2
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'
-
-    - name: Set PYTHONPATH
-      run: |
-        echo "PYTHONPATH=${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE}/app" >> $GITHUB_ENV
-      # Définit le PYTHONPATH pour que Python puisse détecter le module `app`
 
     - name: Install dependencies
       run: |
@@ -35,3 +39,7 @@ jobs:
     - name: Build Docker image
       run: |
         docker build -t myapi .
+
+    - name: Docker Run (optional)
+      run: |
+        docker run -d -p ${{ env.API_PORT }}:${{ env.API_PORT }} --name myapi_container myapi
