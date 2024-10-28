@@ -1,60 +1,49 @@
 name: CI/CD Pipeline for FastAPI
 
+# Déclencheurs pour l'exécution du workflow
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]  # Exécute le workflow pour les push sur la branche main
   pull_request:
-    branches: [ main ]
+    branches: [ main ]  # Exécute le workflow pour les pull requests sur la branche main
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
-    
-    # Configuration des services nécessaires pour les tests
-    services:
-      postgres:
-        image: postgres:13  # Utilisation de l'image Docker officielle PostgreSQL version 13
-        env:
-          POSTGRES_USER: orders  # Nom d'utilisateur pour la base de données
-          POSTGRES_PASSWORD: apiOrders  # Mot de passe pour la base de données
-          POSTGRES_DB: orders_db  # Nom de la base de données
-        ports:
-          - 5432:5432  # Exposition du port 5432 pour la connexion à la base de données
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    runs-on: ubuntu-latest  # Utilise la dernière version d'Ubuntu
 
-      rabbitmq:
-        image: rabbitmq:3-management
-          - 5672:5672  # Port par défaut pour RabbitMQ
-          - 15672:15672  # Port pour l'interface web de gestion
-
-    # Étapes du job
+    # Définit les étapes du job
     steps:
-    - uses: actions/checkout@v2  # Cette étape permet de récupérer le code du dépôt GitHub
+    - uses: actions/checkout@v2  # Récupère le code source de la branche
 
-    - name: Set up Docker Compose
-      run: docker-compose -f docker-compose.yml up -d  # Lance les services définis dans le fichier docker-compose.yml en mode détaché
-
-    - name: Set up Python 3.9
+    - name: Set up Python 3.9  # Configure l'environnement Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'
 
-    - name: Install dependencies
+    - name: Install dependencies  # Installe les dépendances requises à partir de requirements.txt
       run: |
-        docker-compose run api pip install -r requirements.txt
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-    - name: Run tests
+    - name: Run tests  # Exécute les tests unitaires
       run: |
-        docker-compose run api pytest tests/
+        pytest
 
-    - name: Build Docker image
+    - name: Build Docker image  # Construit l'image Docker de l'API
       run: |
         docker build -t myapi .
 
-    - name: Clean up  # Nettoyage
-      run: docker-compose down  # Arrête et supprime les conteneurs lancés par Docker Compose
+    - name: Push Docker image  # Optionnel: pousse l'image Docker dans un registre (exemple avec Docker Hub)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        docker tag myapi $DOCKER_USERNAME/myapi:latest
+        docker push $DOCKER_USERNAME/myapi:latest
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}  # Assurez-vous de configurer ces secrets dans GitHub
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
+# Notes supplémentaires:
+# - Assurez-vous que votre fichier requirements.txt est à la racine du projet pour que pip puisse l'identifier.
+# - La commande pytest suppose que vous avez des tests configurés avec pytest.
+# - La partie "Push Docker image" est optionnelle et doit être configurée avec vos informations de Docker Hub.
