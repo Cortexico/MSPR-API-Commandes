@@ -64,9 +64,8 @@
 #         docker build -t myapi .
 #       # Construit une image Docker pour l'application
 
-name: CI/CD Pipeline for FastAPI
+name: CI/CD Pipeline for Commandes Api
 
-# Déclenche ce workflow pour les événements push et pull request sur la branche main
 on:
   push:
     branches: [ main ]
@@ -75,10 +74,8 @@ on:
 
 jobs:
   build-and-test:
-    # Utilise la dernière version Ubuntu disponible comme environnement de runner
     runs-on: ubuntu-latest
 
-    # Configure un service PostgreSQL pour être utilisé pendant les tests
     services:
       postgres:
         image: postgres:13
@@ -93,16 +90,17 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+      # Configure PostgreSQL service avec des checks de santé pour s'assurer que la DB est prête avant de lancer les tests.
 
     steps:
     - uses: actions/checkout@v2
-      # Récupère le code source du dépôt pour ce workflow
+      # Récupère le code source de la branche actuelle.
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'
-      # Configure Python 3.9 pour l'exécution des scripts Python
+      # Configure Python 3.9 pour l'utilisation dans les étapes suivantes.
 
     - name: Cache Python packages
       uses: actions/cache@v2
@@ -111,35 +109,38 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
-      # Met en cache les paquets pip pour accélérer l'installation des dépendances
+      # Met en cache les dépendances Python pour accélérer l'installation des dépendances lors des builds suivants.
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-      # Installe les dépendances nécessaires à partir de requirements.txt
+      # Installe les dépendances requises à partir de requirements.txt.
 
     - name: Configure environment variables for testing
       run: |
         echo "DATABASE_URL=postgresql+asyncpg://orders:apiOrders@localhost:5432/orders_db" >> $GITHUB_ENV
-      # Configure l'URL de la base de données pour les tests, en s'assurant qu'elle pointe vers le service PostgreSQL
+      # Configure l'URL de la base de données pour les tests, s'assurant que les tests utilisent la bonne instance de PostgreSQL.
 
     - name: Run tests
       run: |
         pytest tests/
-      # Exécute les tests unitaires et d'intégration
+      # Exécute les tests unitaires et d'intégration.
 
     - name: Build Docker image
       run: |
         docker build -t myapi .
-      # Construit une image Docker pour l'application, prête pour le déploiement
+      # Construit une image Docker pour l'application.
 
-    # Étape fictive pour illustrer comment ajouter une notification en cas d'échec ou de succès
     - name: Notify on Slack
-      if: always()
-      uses: some/slack-action@v1
-      with:
-        status: ${{ job.status }}
-        message: 'CI/CD Pipeline Execution Result'
-      # Envoie une notification Slack avec le résultat de l'exécution du pipeline
+      if: always()  # Exécute cette étape quel que soit le résultat des étapes précédentes.
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_CHANNEL: your-slack-channel-name
+        SLACK_TITLE: 'CI/CD Pipeline Execution Result'
+        SLACK_MESSAGE: '${{ job.status }}: Your CI/CD pipeline execution is complete.'
+        SLACK_COLOR: ${{ job.status == 'success' ? 'good' : 'danger' }}
+      # Envoie une notification Slack avec le résultat de l'exécution du pipeline. Remplacez 'your-slack-channel-name' par le nom de votre canal Slack.
+
 
