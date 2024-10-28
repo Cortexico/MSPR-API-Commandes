@@ -1,5 +1,72 @@
+# name: CI/CD Pipeline for FastAPI
+
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
+# jobs:
+#   build-and-test:
+#     runs-on: ubuntu-latest
+
+#     services:
+#       postgres:
+#         image: postgres:13
+#         env:
+#           POSTGRES_USER: orders
+#           POSTGRES_PASSWORD: apiOrders
+#           POSTGRES_DB: orders_db
+#         options: >-
+#           --health-cmd pg_isready
+#           --health-interval 10s
+#           --health-timeout 5s
+#           --health-retries 5
+#         ports:
+#           - 5432:5432
+
+#     steps:
+#     - uses: actions/checkout@v2
+#       # Cette étape récupère le code source de la branche actuelle
+
+#     - name: Set up Python 3.9
+#       uses: actions/setup-python@v2
+#       with:
+#         python-version: '3.9'
+#       # Configure Python 3.9 pour l'utilisation dans les étapes suivantes
+
+#     - name: Set PYTHONPATH
+#       run: echo "PYTHONPATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+#       # Définit la variable PYTHONPATH pour s'assurer que Python trouve les modules
+
+#     - name: Install dependencies
+#       run: |
+#         python -m pip install --upgrade pip
+#         pip install -r requirements.txt
+#       # Installe les dépendances requises à partir de requirements.txt
+
+#     - name: Configure environment variables for testing
+#       run: |
+#         echo "POSTGRES_USER=orders" >> $GITHUB_ENV
+#         echo "POSTGRES_PASSWORD=apiOrders" >> $GITHUB_ENV
+#         echo "POSTGRES_DB=orders_db" >> $GITHUB_ENV
+#         echo "POSTGRES_PORT=5432" >> $GITHUB_ENV  # Ajoutez cette ligne
+#         echo "DATABASE_URL=postgresql+asyncpg://orders:apiOrders@postgres:5432/orders_db" >> $GITHUB_ENV
+#       # Configure les variables d'environnement nécessaires pour les tests
+
+#     - name: Run tests
+#       run: |
+#         pytest tests/
+#       # Exécute les tests unitaires et d'intégration
+
+#     - name: Build Docker image
+#       run: |
+#         docker build -t myapi .
+#       # Construit une image Docker pour l'application
+
 name: CI/CD Pipeline for FastAPI
 
+# Déclenche ce workflow pour les événements push et pull request sur la branche main
 on:
   push:
     branches: [ main ]
@@ -8,8 +75,10 @@ on:
 
 jobs:
   build-and-test:
+    # Utilise la dernière version Ubuntu disponible comme environnement de runner
     runs-on: ubuntu-latest
 
+    # Configure un service PostgreSQL pour être utilisé pendant les tests
     services:
       postgres:
         image: postgres:13
@@ -27,32 +96,33 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      # Cette étape récupère le code source de la branche actuelle
+      # Récupère le code source du dépôt pour ce workflow
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'
-      # Configure Python 3.9 pour l'utilisation dans les étapes suivantes
+      # Configure Python 3.9 pour l'exécution des scripts Python
 
-    - name: Set PYTHONPATH
-      run: echo "PYTHONPATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
-      # Définit la variable PYTHONPATH pour s'assurer que Python trouve les modules
+    - name: Cache Python packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+      # Met en cache les paquets pip pour accélérer l'installation des dépendances
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-      # Installe les dépendances requises à partir de requirements.txt
+      # Installe les dépendances nécessaires à partir de requirements.txt
 
     - name: Configure environment variables for testing
       run: |
-        echo "POSTGRES_USER=orders" >> $GITHUB_ENV
-        echo "POSTGRES_PASSWORD=apiOrders" >> $GITHUB_ENV
-        echo "POSTGRES_DB=orders_db" >> $GITHUB_ENV
-        echo "POSTGRES_PORT=5432" >> $GITHUB_ENV  # Ajoutez cette ligne
-        echo "DATABASE_URL=postgresql+asyncpg://orders:apiOrders@postgres:5432/orders_db" >> $GITHUB_ENV
-      # Configure les variables d'environnement nécessaires pour les tests
+        echo "DATABASE_URL=postgresql+asyncpg://orders:apiOrders@localhost:5432/orders_db" >> $GITHUB_ENV
+      # Configure l'URL de la base de données pour les tests, en s'assurant qu'elle pointe vers le service PostgreSQL
 
     - name: Run tests
       run: |
@@ -62,4 +132,14 @@ jobs:
     - name: Build Docker image
       run: |
         docker build -t myapi .
-      # Construit une image Docker pour l'application
+      # Construit une image Docker pour l'application, prête pour le déploiement
+
+    # Étape fictive pour illustrer comment ajouter une notification en cas d'échec ou de succès
+    - name: Notify on Slack
+      if: always()
+      uses: some/slack-action@v1
+      with:
+        status: ${{ job.status }}
+        message: 'CI/CD Pipeline Execution Result'
+      # Envoie une notification Slack avec le résultat de l'exécution du pipeline
+
