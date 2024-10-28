@@ -13,18 +13,20 @@ jobs:
       postgres:
         image: postgres:13
         env:
-          POSTGRES_USER: orders
-          POSTGRES_PASSWORD: apiOrders
-          POSTGRES_DB: orders_db
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}  # Assurez-vous que ce secret est défini.
+          POSTGRES_HOST: localhost  # Généralement localhost pour le service dans GitHub Actions
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432
+          - ${{ secrets.POSTGRES_PORT }}:5432
     env:
-      DATABASE_URL: postgresql://orders:apiOrders@localhost:5432/orders_db
+      DATABASE_URL: postgresql+asyncpg://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:${{ secrets.POSTGRES_PORT }}/${{ secrets.POSTGRES_DB }}
       # Adaptez cette chaîne à vos besoins ou configurez-la pour qu'elle soit générée dynamiquement avec les bonnes variables.
 
     steps:
