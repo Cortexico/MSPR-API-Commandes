@@ -24,6 +24,8 @@ async_session = sessionmaker(
 
 Base = declarative_base()
 
+from app import models
+
 # Function to create tables at startup
 async def create_tables():
     async with engine.begin() as conn:
