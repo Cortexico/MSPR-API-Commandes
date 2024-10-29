@@ -5,6 +5,7 @@ from aio_pika import connect_robust, Message, ExchangeType
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app import models, schemas
+from fastapi import BackgroundTasks
 
 # Récupérer une commande par ID
 async def get_order(db: AsyncSession, order_id: int):
@@ -16,16 +17,14 @@ async def get_orders(db: AsyncSession, skip: int = 0, limit: int = 100):
     result = await db.execute(select(models.Order).offset(skip).limit(limit))
     return result.scalars().all()
 
-# Créer une nouvelle commande
-async def create_order(db: AsyncSession, order: schemas.OrderCreate):
-    db_order = models.Order(**order.dict())
-    db.add(db_order)
-    await db.commit()
-    await db.refresh(db_order)
-
-    # Publier un message sur RabbitMQ
-    asyncio.create_task(publish_order_created(db_order))
-
+@router.post("/", response_model=schemas.OrderResponse)
+async def create_order(
+    order: schemas.OrderCreate, 
+    db: AsyncSession = Depends(get_db), 
+    background_tasks: BackgroundTasks
+):
+    db_order = await crud.create_order(db=db, order=order)
+    background_tasks.add_task(publish_order_created, db_order)
     return db_order
 
 # Mettre à jour une commande

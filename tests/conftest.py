@@ -15,15 +15,14 @@ from app.main import app
 from app.database import Base, get_db, engine
 
 # Create the tables in the test database
-@pytest.fixture(scope='session', autouse=True)
-def create_test_database():
-    import asyncio
-    async def create_tables():
-        async with engine.begin() as conn:
-            # Corrected line: pass the method without calling it
-            await conn.run_sync(Base.metadata.create_all)
-
-    asyncio.run(create_tables())
+@pytest_asyncio.fixture(scope='session', autouse=True)
+async def create_test_database():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    # Drop tables after tests
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 
 @pytest_asyncio.fixture(scope="function")
 async def async_db():
