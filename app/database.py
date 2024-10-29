@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 
 # Load environment variables
-load_dotenv()
+load_dotenv()  # This will not override existing environment variables
 
 POSTGRES_USER = os.getenv("POSTGRES_USER", "orders")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "apiOrders")
@@ -23,6 +23,11 @@ async_session = sessionmaker(
 )
 
 Base = declarative_base()
+
+# Function to create tables at startup
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 @asynccontextmanager
 async def get_db():
