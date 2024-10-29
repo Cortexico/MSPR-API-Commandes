@@ -25,8 +25,7 @@ jobs:
 
     - name: Set PYTHONPATH
       run: |
-        echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
-        echo "PYTHONPATH=${{ github.workspace }}/app" >> $GITHUB_ENV
+        echo "PYTHONPATH=${{ github.workspace }}:${{ github.workspace }}/app" >> $GITHUB_ENV
 
     - name: Run tests
       run: |
