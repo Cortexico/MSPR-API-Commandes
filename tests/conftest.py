@@ -33,4 +33,12 @@ def event_loop():
 @pytest.fixture(scope='session', autouse=True)
 async def initialize_database():
     async with test_engine.begin() as conn:
-        await c
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    await test_engine.dispose()
+
+@pytest_asyncio.fixture(scope='function')
+async def client():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        yield c
