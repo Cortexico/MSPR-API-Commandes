@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -27,3 +28,8 @@ Base = declarative_base()
 async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+@asynccontextmanager
+async def get_db():
+    async with async_session() as session:
+        yield session

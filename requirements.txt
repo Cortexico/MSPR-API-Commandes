@@ -6,4 +6,6 @@ python-dotenv
 aio_pika
 asyncpg
 pytest
+pytest-asyncio
 httpx
+alembic
