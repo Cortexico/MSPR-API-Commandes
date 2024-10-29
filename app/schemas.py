@@ -10,12 +10,15 @@ class OrderCreate(OrderBase):
     pass
 
 class OrderUpdate(BaseModel):
-    customer_id: Optional[int]
-    total_amount: Optional[float]
-    status: Optional[str]
+    customer_id: Optional[int] = None
+    total_amount: Optional[float] = None
+    status: Optional[str] = None
 
 class OrderResponse(OrderBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+    
+    #depreciated
+    #class Config:
+     #   orm_mode = True
