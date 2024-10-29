@@ -5,6 +5,7 @@ pydantic
 python-dotenv
 aio_pika
 asyncpg
+aiosqlite
 pytest
 pytest-asyncio
 httpx
