@@ -66,7 +66,6 @@ async def publish_order_created(order: models.Order):
             "customer_id": order.customer_id,
             "total_amount": order.total_amount,
             "status": order.status
-            # Include more order details if necessary
         })
         message = Message(message_body.encode('utf-8'))
         await exchange.publish(message, routing_key="")

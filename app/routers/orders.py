@@ -49,4 +49,4 @@ async def delete_order(order_id: int, db: AsyncSession = Depends(get_db)):
     db_order = await crud.delete_order(db, order_id)
     if db_order is None:
         raise HTTPException(status_code=404, detail="Commande non trouvée")
-    return  # Return nothing for 204 No Content
+    return  # No content for 204 response

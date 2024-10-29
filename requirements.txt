@@ -3,9 +3,8 @@ uvicorn[standard]
 SQLAlchemy
 pydantic
 python-dotenv
-aio_pika
+aio-pika
 asyncpg
-aiosqlite
 pytest
 pytest-asyncio
 httpx
