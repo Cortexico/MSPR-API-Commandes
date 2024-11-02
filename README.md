@@ -216,3 +216,20 @@ Les variables d'environnement définies dans `ci.yml` incluent les configuration
 
   - Gardez vos dépendances à jour en vérifiant régulièrement le fichier `requirements.txt`.
   
+### Règles d’Hébergement
+
+1. **Sécurité des transactions** :
+   - L'API Commandes gère des informations sensibles sur les commandes, nécessitant un hébergement sécurisé et l’utilisation de HTTPS.
+   - Comme pour l’API Clients, veillez à sécuriser le fichier `.env` avec un gestionnaire de secrets pour éviter l’exposition des identifiants de la base de données et de RabbitMQ.
+
+2. **Connexion à PostgreSQL** :
+   - Hébergez PostgreSQL dans un environnement sécurisé et configurez-le pour n’accepter que les connexions de l’API Commandes. Utilisez des pare-feu et des VPN si possible pour ajouter une couche de sécurité.
+   - Activez le chiffrement des données au repos et en transit pour PostgreSQL pour protéger les données sensibles des commandes.
+
+3. **Disponibilité et scalabilité** :
+   - Utilisez des conteneurs Docker pour l'API afin d'assurer une portabilité et une gestion efficace des ressources.
+   - Privilégiez un environnement d’hébergement dans le cloud qui supporte l'autoscaling en fonction des charges (par exemple, Amazon ECS ou Azure Kubernetes).
+
+4. **Audit et journalisation** :
+   - Intégrez des outils de surveillance pour observer les performances, les erreurs et la consommation des ressources.
+   - Conservez des journaux des transactions et des opérations critiques, avec des alertes configurées pour tout comportement anormal ou échec de transaction.
