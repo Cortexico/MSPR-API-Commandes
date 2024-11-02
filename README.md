@@ -125,6 +125,43 @@ L'API utilise RabbitMQ pour publier et consommer des messages relatifs aux comma
 - **Publisher** : Envoie des notifications lors de la création ou modification de commandes.
 - **Consumer** : Reçoit des messages des autres API (Clients et Produits) pour vérifier les informations client et produit.
 
+### Documentation CI/CD - GitHub Actions
+
+#### Contexte
+L'API Commandes intègre un pipeline CI/CD via GitHub Actions pour automatiser les tests et les vérifications de code, garantissant ainsi la fiabilité et la qualité du code avant chaque intégration. Ce pipeline est déclenché par des `push` et `pull requests` sur les branches du dépôt.
+
+#### Configuration GitHub Actions
+Le fichier de workflow `.github/workflows/ci.yml` contient les étapes principales pour automatiser l’intégration continue :
+
+1. **Déclencheur** : Le pipeline CI/CD s’exécute à chaque `push` ou `pull request` vers la branche principale, ainsi que sur toute nouvelle branche.
+2. **Environnement de test** : Utilise une base de données PostgreSQL dédiée pour les tests, avec un ensemble de variables d’environnement configurées dans `ci.yml`.
+
+#### Étapes du Workflow CI/CD
+
+1. **Configurer l'environnement** :
+   - Installe les dépendances listées dans `requirements.txt`.
+   - Configure la base de données de test PostgreSQL et utilise des variables d'environnement pour simuler l’environnement de production.
+
+2. **Lancer les tests unitaires** :
+   - Les tests unitaires se trouvent dans le répertoire `tests/` et sont exécutés avec `pytest` pour valider le comportement de chaque endpoint.
+   - Tests inclus dans `tests/test_orders.py` :
+     - `test_create_order` : Vérifie la création d’une commande.
+     - `test_get_order` et `test_get_nonexistent_order` : Valident les opérations de récupération.
+     - `test_update_order` : Vérifie la mise à jour d'une commande.
+     - `test_delete_order` : Vérifie la suppression d'une commande.
+     - `test_create_order_with_invalid_data` : Teste la validation des données d'entrée.
+     
+3. **Vérifications de code** :
+   - Le pipeline utilise `flake8` pour analyser le style du code et garantir la qualité.
+   - Tout échec déclenche un arrêt du workflow, assurant que seules les modifications conformes aux standards sont intégrées.
+
+4. **Build et Déploiement (optionnel)** :
+   - Le pipeline peut être complété par des étapes de build et de déploiement si nécessaire.
+   - Des actions GitHub peuvent être ajoutées pour automatiser le déploiement en production.
+
+#### Variables d'environnement de test
+Les variables d'environnement définies dans `ci.yml` incluent les configurations nécessaires pour PostgreSQL et les services de l'API. Ces variables peuvent être modifiées directement dans GitHub Actions pour s'adapter aux environnements de test.
+
 ## **Notes Importantes pour Toutes les APIs**
 
 ### **Fichiers `.env`**
