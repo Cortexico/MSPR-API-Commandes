@@ -8,11 +8,10 @@ from app.database import Base, get_db, DATABASE_URL
 from app.main import app
 from httpx import AsyncClient, ASGITransport
 
-# Configuration de l'engine pour la base de données de test
-test_engine = create_async_engine(DATABASE_URL, echo=True)
-TestSessionLocal = sessionmaker(
-    bind=test_engine, class_=AsyncSession, expire_on_commit=False
-)
+# Utilisation d'une URL de base de données dédiée aux tests
+TEST_DATABASE_URL = DATABASE_URL + "_test"  # Ajouter _test pour éviter les conflits
+test_engine = create_async_engine(TEST_DATABASE_URL, echo=True)
+TestSessionLocal = sessionmaker(bind=test_engine, class_=AsyncSession, expire_on_commit=False)
 
 
 # Surcharge de la dépendance `get_db` pour utiliser la session de test
@@ -23,19 +22,17 @@ async def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 
 
-# Fixture pour préparer et nettoyer la base de données de test (tables uniquement)
+# Création et suppression des tables avant et après chaque test
 @pytest_asyncio.fixture(scope='function', autouse=True)
 async def initialize_database():
-    # Créer les tables pour les tests
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
-    # Supprimer les tables après les tests
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
 
-# Fixture pour le client asynchrone
+# Configuration de la fixture pour le client HTTP asynchrone
 @pytest_asyncio.fixture(scope='function')
 async def client():
     transport = ASGITransport(app=app)
