@@ -7,10 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from app.database import Base, get_db, DATABASE_URL
 from app.main import app
-from app.models import Customer  # Import du modèle Customer
+from app.models import Customer, Product  # Import des modèles nécessaires
 from httpx import AsyncClient, ASGITransport
 
-# Configurer la base de données de test en utilisant aiosqlite
+# Configuration de la base de données de test en utilisant aiosqlite
 os.environ["IS_TESTING"] = "True"
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test.db"
 
@@ -33,15 +33,21 @@ def event_loop():
     loop.close()
 
 
-# Fonction asynchrone pour créer les tables et un client par défaut
+# Fonction asynchrone pour créer les tables et ajouter un client et un produit par défaut
 async def async_create_all():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     
-    # Ajouter un client par défaut pour les tests
+    # Ajouter un client et un produit par défaut pour les tests
     async with TestingSessionLocal() as session:
+        # Créer un client par défaut
         new_customer = Customer(name="Test Customer", email="test_customer@example.com", address="123 Test Street")
         session.add(new_customer)
+        
+        # Créer un produit par défaut
+        new_product = Product(id="test_product", name="Test Product", description="A product for testing", price=99.99, stock=10)
+        session.add(new_product)
+        
         await session.commit()
 
 
