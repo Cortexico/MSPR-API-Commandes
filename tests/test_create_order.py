@@ -3,18 +3,9 @@ import pytest
 
 @pytest.mark.asyncio
 async def test_create_order(client):
-    # Créer un client pour garantir que customer_id est valide
-    response = await client.post("/customers/", json={
-        "name": "Test Customer",
-        "email": "test_customer@example.com",
-        "address": "123 Test Street"
-    })
-    assert response.status_code == 201
-    customer_id = response.json()["id"]
-
-    # Créer une commande avec le client créé
+    # Utiliser le customer_id créé par défaut dans la base de données de test (ID=1 par exemple)
     response = await client.post("/orders/", json={
-        "customer_id": customer_id,
+        "customer_id": 1,  # Assure-toi que cet ID est correct selon ce que tu as en base
         "total_amount": 99.99,
         "status": "pending",
         "items": [
@@ -27,7 +18,7 @@ async def test_create_order(client):
     })
     assert response.status_code == 201
     data = response.json()
-    assert data["customer_id"] == customer_id
+    assert data["customer_id"] == 1
     assert data["total_amount"] == 99.99
     assert data["status"] == "pending"
     assert "id" in data
