@@ -32,16 +32,16 @@ async def create_test_database():
             # La base de données existe déjà
             pass
 
+
 # Surcharge de la dépendance `get_db` pour utiliser la session de test
 async def override_get_db():
     async with TestSessionLocal() as session:
         yield session
 
-# Remplacer la dépendance de base de données par celle de test
 app.dependency_overrides[get_db] = override_get_db
 
 
-@pytest_asyncio.fixture(scope='session', autouse=True)
+@pytest_asyncio.fixture(scope='function', autouse=True)
 async def initialize_database():
     # Créer la base de données de test si elle n'existe pas
     await create_test_database()
