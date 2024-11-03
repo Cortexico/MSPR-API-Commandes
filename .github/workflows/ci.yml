@@ -93,11 +93,30 @@ jobs:
         run: |
           echo "PYTHONPATH=${{ github.workspace }}:${{ github.workspace }}/app" >> $GITHUB_ENV
 
-      - name: Run tests
+
+      - name: Run test_create_order
         env:
           PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/app
         run: |
-          pytest tests/
+          pytest tests/test_create_order.py
+
+      - name: Run test_get_order
+        env:
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/app
+        run: |
+          pytest tests/test_get_order.py
+
+      - name: Run test_update_order
+        env:
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/app
+        run: |
+          pytest tests/test_update_order.py
+
+      - name: Run test_delete_order
+        env:
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/app
+        run: |
+          pytest tests/test_delete_order.py
 
       - name: Build Docker image
         run: |
