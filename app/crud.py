@@ -1,4 +1,3 @@
-from http.client import HTTPException
 import json
 import os
 from typing import Optional, List
@@ -7,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app import models, schemas
 from sqlalchemy.orm import selectinload
+from fastapi import HTTPException
 
 
 async def create_order(db: AsyncSession, order: schemas.OrderCreate) -> models.Order:
