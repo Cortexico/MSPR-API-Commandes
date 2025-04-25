@@ -233,3 +233,22 @@ Les variables d'environnement définies dans `ci.yml` incluent les configuration
 4. **Audit et journalisation** :
    - Intégrez des outils de surveillance pour observer les performances, les erreurs et la consommation des ressources.
    - Conservez des journaux des transactions et des opérations critiques, avec des alertes configurées pour tout comportement anormal ou échec de transaction.
+
+
+## Déploiement Kubernetes
+
+Ce projet contient également les fichiers nécessaires pour déployer l'API Commandes et sa base PostgreSQL dans un cluster Kubernetes.
+
+Les ressources créées sont :
+
+- **Deployment** pour l'API Commandes (`api-orders`)
+- **Service** de type `NodePort` pour exposer l'API (`api-orders`)
+- **StatefulSet** pour la base PostgreSQL (`postgres-orders`) avec stockage persistant
+- **Service** de type `Headless` (`postgres-orders`) pour PostgreSQL
+
+### Commandes de déploiement
+
+Appliquer les ressources Kubernetes :
+```bash
+kubectl apply -f api-commandes.yaml
+kubectl apply -f postgres-orders.yaml
